@@ -1,23 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RecipeDetail({ route, navigation }) {
     const { recipe } = route.params;
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    useEffect(() => {
+        checkIfFavorite();
+    }, []);
+
+    const checkIfFavorite = async () => {
+        try {
+            const favoriteRecipes = await AsyncStorage.getItem('favoriteRecipes');
+            const favorites = favoriteRecipes ? JSON.parse(favoriteRecipes) : [];
+            setIsFavorite(favorites.some(r => r.id === recipe.id));
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const toggleFavorite = async () => {
+        try {
+            const favoriteRecipes = await AsyncStorage.getItem('favoriteRecipes');
+            let favorites = favoriteRecipes ? JSON.parse(favoriteRecipes) : [];
+
+            if (isFavorite) {
+                favorites = favorites.filter(r => r.id !== recipe.id);
+            } else {
+                favorites.push(recipe);
+            }
+
+            await AsyncStorage.setItem('favoriteRecipes', JSON.stringify(favorites));
+            setIsFavorite(!isFavorite);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const deleteRecipe = async () => {
         try {
-            // Retrieve stored recipes from AsyncStorage
             const storedRecipes = await AsyncStorage.getItem('recipes');
             const recipes = storedRecipes ? JSON.parse(storedRecipes) : [];
-
-            // Filter out the recipe to be deleted
             const updatedRecipes = recipes.filter(r => r.id !== recipe.id);
-
-            // Save the updated recipes back to AsyncStorage
             await AsyncStorage.setItem('recipes', JSON.stringify(updatedRecipes));
 
-            // Navigate back to the Recipes screen
+            const favoriteRecipes = await AsyncStorage.getItem('favoriteRecipes');
+            let favorites = favoriteRecipes ? JSON.parse(favoriteRecipes) : [];
+            favorites = favorites.filter(r => r.id !== recipe.id);
+            await AsyncStorage.setItem('favoriteRecipes', JSON.stringify(favorites));
+
             navigation.navigate('Recipes');
         } catch (error) {
             console.error('Error deleting recipe:', error);
@@ -27,10 +59,7 @@ export default function RecipeDetail({ route, navigation }) {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            {/* Display the recipe title */}
             <Text style={styles.title}>{recipe.title}</Text>
-
-            {/* Display the list of ingredients */}
             <Text style={styles.subtitle}>Ingredients:</Text>
             {recipe.ingredients && recipe.ingredients.map((ingredient, index) => (
                 ingredient && (
@@ -39,20 +68,18 @@ export default function RecipeDetail({ route, navigation }) {
                     </Text>
                 )
             ))}
-
-            {/* Display the instructions */}
             <Text style={styles.subtitle}>Instructions:</Text>
             <Text style={styles.text}>{recipe.instructions}</Text>
             <View style={styles.controlButtons}>
-                {/* Button to navigate to the Add/Edit Recipe screen with the current recipe */}
                 <View style={styles.button}>
                     <Button title="Edit Recipe" onPress={() => navigation.navigate('Add/Edit Recipe', { recipe })} />
                 </View>
-
-                {/* Button to delete the current recipe */}
                 <View style={styles.button}>
                     <Button title="Delete Recipe" onPress={deleteRecipe} />
                 </View>
+            </View>
+            <View style={styles.favoriteButton}>
+                <Button title={isFavorite ? "Unfavorite" : "Favorite"} onPress={toggleFavorite} />
             </View>
         </ScrollView>
     );
@@ -86,5 +113,8 @@ const styles = StyleSheet.create({
     button: {
         flex: 1,
         marginHorizontal: 4,
+    },
+    favoriteButton: {
+        marginTop: 16,
     },
 });
