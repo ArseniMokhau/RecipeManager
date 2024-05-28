@@ -35,7 +35,7 @@ export default function RecipeForm({ route, navigation }) {
   };
 
   const saveRecipe = async () => {
-    if (title.trim() === '') { // Check if title is empty or whitespace
+    if (title.trim() === '') {
       Alert.alert('Error', 'Recipe title cannot be empty');
       return;
     }
@@ -94,7 +94,7 @@ export default function RecipeForm({ route, navigation }) {
               itemStyle={styles.pickerItem}
               onValueChange={(itemValue) => handleIngredientChange(index, 'measurement', itemValue)}
             >
-              {Object.values(MeasurementTypesShort.EU).map((type, i) => ( // Use short measurement types
+              {Object.values(MeasurementTypesShort.EU).map((type, i) => (
                 <Picker.Item key={i} label={type} value={Object.keys(MeasurementTypesShort.EU)[i]} />
               ))}
             </Picker>
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 8,
     flex: 1,
-    textAlign: 'left', // Align text to the left
+    textAlign: 'left',
   },
   titleInput: {
     height: 40,
@@ -147,19 +147,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   nameInput: {
-    width: '30%', // Adjust width for the name input field
+    width: '30%',
   },
   quantityInput: {
-    width: '30%', // Adjust width for the quantity input field
+    width: '30%',
   },
   picker: {
     borderColor: 'gray',
     borderWidth: 1,
-    width: '30%', // Adjust width for the picker
-    textAlign: 'left', // Align text to the left
+    width: '30%',
+    textAlign: 'left',
   },
   pickerItem: {
-    textAlign: 'left', // Align text to the left
+    textAlign: 'left',
   },
   instructions: {
     height: 500,
