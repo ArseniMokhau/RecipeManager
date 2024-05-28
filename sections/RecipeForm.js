@@ -8,6 +8,7 @@ export default function RecipeForm({ route, navigation }) {
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState([]);
   const [instructions, setInstructions] = useState('');
+  const [tags, setTags] = useState('');
   const { recipe } = route.params;
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export default function RecipeForm({ route, navigation }) {
       setTitle(recipe.title);
       setIngredients(recipe.ingredients || []);
       setInstructions(recipe.instructions);
+      setTags(recipe.tags || '');
     }
   }, [recipe]);
 
@@ -41,22 +43,15 @@ export default function RecipeForm({ route, navigation }) {
     }
 
     const filteredIngredients = ingredients.filter(ingredient => ingredient.name.trim() !== '' && ingredient.quantity.trim() !== '');
-    /*
-    // Check if any ingredient is empty or null
-    if (filteredIngredients.length !== ingredients.length) {
-      Alert.alert('Error', 'Ingredient fields cannot be empty');
-      return;
-    }
-    */
     try {
       const storedRecipes = await AsyncStorage.getItem('recipes');
       const recipes = storedRecipes ? JSON.parse(storedRecipes) : [];
 
       if (recipe) {
-        const updatedRecipes = recipes.map(r => r.id === recipe.id ? { ...r, title, ingredients: filteredIngredients, instructions } : r);
+        const updatedRecipes = recipes.map(r => r.id === recipe.id ? { ...r, title, ingredients: filteredIngredients, instructions, tags } : r);
         await AsyncStorage.setItem('recipes', JSON.stringify(updatedRecipes));
       } else {
-        const newRecipe = { id: Date.now(), title, ingredients: filteredIngredients, instructions };
+        const newRecipe = { id: Date.now(), title, ingredients: filteredIngredients, instructions, tags };
         recipes.push(newRecipe);
         await AsyncStorage.setItem('recipes', JSON.stringify(recipes));
       }
@@ -108,6 +103,12 @@ export default function RecipeForm({ route, navigation }) {
         onChangeText={setInstructions}
         style={[styles.input, styles.instructions]}
         multiline
+      />
+      <TextInput
+        placeholder="Tags (comma separated)"
+        value={tags}
+        onChangeText={setTags}
+        style={styles.input}
       />
       <Button title="Save Recipe" onPress={saveRecipe} />
     </ScrollView>

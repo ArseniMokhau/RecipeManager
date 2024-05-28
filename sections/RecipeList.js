@@ -28,6 +28,7 @@ export default function RecipeList({ navigation }) {
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => navigation.navigate('Recipe Details', { recipe: item })}>
             <Text style={styles.text}>{item.title}</Text>
+            {item.tags && <Text style={styles.tags}>Tags: {item.tags}</Text>}
           </TouchableOpacity>
         )}
       />
@@ -40,19 +41,12 @@ const styles = StyleSheet.create({
       flexGrow: 1,
       padding: 16,
     },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 8,
-    },
-    subtitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      marginTop: 16,
-      marginBottom: 4,
-    },
     text: {
       fontSize: 16,
       marginBottom: 8,
+    },
+    tags: {
+      fontSize: 14,
+      color: 'grey',
     },
   });

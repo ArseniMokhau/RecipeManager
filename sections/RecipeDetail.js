@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RecipeDetail({ route, navigation }) {
     const { recipe } = route.params;
+    const [notes, setNotes] = useState(recipe.notes || '');
 
     const deleteRecipe = async () => {
         try {
@@ -25,6 +26,25 @@ export default function RecipeDetail({ route, navigation }) {
         }
     };
 
+    const saveNotes = async () => {
+        try {
+            // Retrieve stored recipes from AsyncStorage
+            const storedRecipes = await AsyncStorage.getItem('recipes');
+            const recipes = storedRecipes ? JSON.parse(storedRecipes) : [];
+
+            // Find the current recipe and update its notes
+            const updatedRecipes = recipes.map(r => r.id === recipe.id ? { ...r, notes } : r);
+
+            // Save the updated recipes back to AsyncStorage
+            await AsyncStorage.setItem('recipes', JSON.stringify(updatedRecipes));
+
+            Alert.alert('Success', 'Notes saved successfully');
+        } catch (error) {
+            console.error('Error saving notes:', error);
+            Alert.alert('Error', 'Failed to save the notes');
+        }
+    };
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {/* Display the recipe title */}
@@ -43,6 +63,27 @@ export default function RecipeDetail({ route, navigation }) {
             {/* Display the instructions */}
             <Text style={styles.subtitle}>Instructions:</Text>
             <Text style={styles.text}>{recipe.instructions}</Text>
+
+            {/* Display the tags */}
+            {recipe.tags && (
+                <>
+                    <Text style={styles.subtitle}>Tags:</Text>
+                    <Text style={styles.text}>{recipe.tags}</Text>
+                </>
+            )}
+
+            {/* Notes input field */}
+            <Text style={styles.subtitle}>Notes:</Text>
+            <TextInput
+                placeholder="Add notes..."
+                value={notes}
+                onChangeText={setNotes}
+                multiline={true}
+                style={styles.notesInput}
+            />
+
+            <Button title="Save Notes" onPress={saveNotes} />
+
             <View style={styles.controlButtons}>
                 {/* Button to navigate to the Add/Edit Recipe screen with the current recipe */}
                 <View style={styles.button}>
@@ -77,6 +118,13 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         marginBottom: 8,
+    },
+    notesInput: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 8,
+        marginVertical: 8,
+        minHeight: 100, // Set a minimum height for the input field
     },
     controlButtons: {
         marginTop: 16,
